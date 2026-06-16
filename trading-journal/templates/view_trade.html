@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}{{ trade.pair }} {{ trade.trade_date }} — SMC Trading Journal{% endblock %}
+
+{% block content %}
+<div class="trade-view">
+    <div class="trade-view-header">
+        <div>
+            <h1>{{ trade.pair }} — {{ trade.trade_direction }} Trade</h1>
+            <p class="trade-meta">{{ trade.trade_date }} | {{ trade.session or 'No session' }} | ID: {{ trade.trade_id[:8] }}</p>
+        </div>
+        <div class="trade-view-actions">
+            <a href="{{ url_for('edit_trade', trade_id=trade.trade_id) }}" class="btn btn-outline">✏️ Edit</a>
+            <form method="POST" action="{{ url_for('delete_trade', trade_id=trade.trade_id) }}" style="display:inline" onsubmit="return confirm('Delete this trade permanently?')">
+                <button type="submit" class="btn btn-danger">🗑️ Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Outcome Badge -->
+    <div class="outcome-banner outcome-{{ trade.trade_outcome|lower }}">
+        {% if trade.trade_outcome == 'Win' %}✅ WINNING TRADE
+        {% elif trade.trade_outcome == 'Loss' %}❌ LOSING TRADE
+        {% elif trade.trade_outcome == 'Missed' %}⚠️ MISSED TRADE
+        {% else %}➖ BREAKEVEN{% endif %}
+        {% if trade.pnl %} — ${{ '%.2f'|format(trade.pnl) }}{% endif %}
+        {% if trade.risk_reward %} — {{ trade.risk_reward }}R{% endif %}
+    </div>
+
+    <!-- Two column layout -->
+    <div class="trade-detail-grid">
+        <!-- Left: Trade Info -->
+        <div class="detail-card">
+            <h3>📊 Trade Overview</h3>
+            <table class="detail-table">
+                <tr><td class="label">Pair</td><td>{{ trade.pair }}</td></tr>
+                <tr><td class="label">Direction</td><td>{{ trade.trade_direction }}</td></tr>
+                <tr><td class="label">Session</td><td>{{ trade.session or '—' }}</td></tr>
+                <tr><td class="label">Entry</td><td>{{ trade.entry_price or '—' }}</td></tr>
+                <tr><td class="label">Stop Loss</td><td>{{ trade.sl_price or '—' }}</td></tr>
+                <tr><td class="label">TP1</td><td>{{ trade.tp1_price or '—' }}</td></tr>
+                <tr><td class="label">TP2</td><td>{{ trade.tp2_price or '—' }}</td></tr>
+                <tr><td class="label">R:R</td><td>{{ trade.risk_reward or '—' }}</td></tr>
+                <tr><td class="label">Position Size</td><td>{{ trade.position_size or '—' }}</td></tr>
+                <tr><td class="label">P&L</td><td>${{ '%.2f'|format(trade.pnl) if trade.pnl else '—' }}</td></tr>
+                <tr><td class="label">P&L %</td><td>{{ '%.2f'|format(trade.pnl_percent) if trade.pnl_percent else '—' }}%</td></tr>
+            </table>
+        </div>
+
+        <!-- Right: SMC Analysis -->
+        <div class="detail-card">
+            <h3>🔍 SMC Setup</h3>
+            <table class="detail-table">
+                <tr><td class="label">HTF Bias</td><td>{{ trade.htf_bias or '—' }}</td></tr>
+                <tr><td class="label">HTF TF</td><td>{{ trade.htf_timeframe or '—' }}</td></tr>
+                <tr><td class="label">Structure</td><td>{{ trade.htf_structure or '—' }}</td></tr>
+                <tr><td class="label">POI</td><td>{{ trade.poi_type or '—' }} ({{ trade.poi_timeframe or '—' }})</td></tr>
+                <tr><td class="label">LTF TF</td><td>{{ trade.ltf_timeframe or '—' }}</td></tr>
+                <tr><td class="label">LTF Trigger</td><td>{{ trade.ltf_trigger or '—' }}</td></tr>
+                <tr><td class="label">Liquidity Sweep</td><td>{{ '✅ ' + (trade.liquidity_type or 'Yes') if trade.liquidity_sweep else '—' }}</td></tr>
+                <tr><td class="label">Refined Entry</td><td>{{ '✅ ' + (trade.refined_poi or 'Yes') if trade.refined_entry else '—' }}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="detail-card full-width">
+        <h3>📝 Notes</h3>
+        {% if trade.pre_trade_notes %}
+            <div class="note-block">
+                <h4>Pre-Trade Plan</h4>
+                <p>{{ trade.pre_trade_notes }}</p>
+            </div>
+        {% endif %}
+        {% if trade.post_trade_notes %}
+            <div class="note-block">
+                <h4>Post-Trade Review</h4>
+                <p>{{ trade.post_trade_notes }}</p>
+            </div>
+        {% endif %}
+        {% if trade.mistakes %}
+            <div class="note-block note-warning">
+                <h4>⚠️ Mistakes</h4>
+                <p>{{ trade.mistakes }}</p>
+            </div>
+        {% endif %}
+        {% if trade.lessons %}
+            <div class="note-block note-info">
+                <h4>💡 Lessons</h4>
+                <p>{{ trade.lessons }}</p>
+            </div>
+        {% endif %}
+        {% if trade.emotion_before or trade.emotion_during or trade.emotion_after %}
+            <div class="note-block">
+                <h4>🧠 Emotional State</h4>
+                <p>Before: {{ trade.emotion_before or '—' }} | During: {{ trade.emotion_during or '—' }} | After: {{ trade.emotion_after or '—' }}</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Screenshots -->
+    {% if trade.screenshots %}
+    <div class="detail-card full-width">
+        <h3>📸 Screenshots</h3>
+        <div class="screenshots-grid">
+            {% for shot in trade.screenshots|sort(attribute='sort_order') %}
+            <div class="screenshot-item">
+                <div class="screenshot-label">
+                    {{ shot.label or 'Screenshot' }}
+                    {% if shot.timeframe %}<span class="badge badge-tf">{{ shot.timeframe }}</span>{% endif %}
+                </div>
+                <img src="{{ url_for('static', filename=shot.filepath.replace('static/', '')) }}" alt="{{ shot.label }}" class="screenshot-img" onclick="openLightbox(this.src)">
+                {% if shot.description %}
+                    <p class="screenshot-desc">{{ shot.description }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- AI Analysis -->
+    <div class="detail-card full-width">
+        <h3>🤖 AI Analysis</h3>
+        {% if trade.ai_analysis %}
+            <div class="ai-analysis-content">
+                {{ trade.ai_analysis | replace('\n', '<br>') | safe }}
+            </div>
+        {% else %}
+            <p class="text-muted">No AI analysis yet. Generate one below.</p>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('analyze_trade', trade_id=trade.trade_id) }}" class="inline-form">
+            <div class="form-group">
+                <label for="groq_api_key">Groq API Key (or set in Settings)</label>
+                <input type="password" id="groq_api_key" name="groq_api_key" placeholder="gsk_...">
+            </div>
+            <button type="submit" class="btn btn-primary">🤖 Generate AI Analysis</button>
+        </form>
+    </div>
+
+    <!-- PDF Generation -->
+    <div class="detail-card full-width">
+        <h3>📄 PDF Report</h3>
+        <div class="pdf-actions">
+            <form method="POST" action="{{ url_for('generate_pdf', trade_id=trade.trade_id) }}" style="display:inline">
+                <button type="submit" class="btn btn-primary">📄 Generate PDF</button>
+            </form>
+            {% if trade.pdf_path %}
+                <a href="{{ url_for('download_pdf', trade_id=trade.trade_id) }}" class="btn btn-outline">⬇️ Download PDF</a>
+                <span class="text-muted small-text">Saved to: {{ trade.pdf_path }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="Screenshot">
+    <span class="lightbox-close">&times;</span>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openLightbox(src) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,626 @@
+{% extends "base.html" %}
+{% block title %}New Trade — SMC Trading Journal{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1 class="page-title">Log New Trade</h1>
+
+    <form method="POST" enctype="multipart/form-data" id="tradeForm">
+        <!-- SECTION: Basic Info -->
+        <div class="form-section">
+            <h2 class="form-section-title">📋 Trade Info</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="pair">Pair / Symbol *</label>
+                    <input type="text" id="pair" name="pair" required placeholder="e.g., EURUSD, BTCUSD, NAS100">
+                </div>
+                <div class="form-group">
+                    <label for="trade_date">Trade Date *</label>
+                    <input type="date" id="trade_date" name="trade_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="trade_direction">Direction *</label>
+                    <select id="trade_direction" name="trade_direction" required>
+                        <option value="">Select...</option>
+                        <option value="Long">Long (Buy)</option>
+                        <option value="Short">Short (Sell)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="trade_outcome">Outcome *</label>
+                    <select id="trade_outcome" name="trade_outcome" required>
+                        <option value="">Select...</option>
+                        <option value="Win">✅ Win</option>
+                        <option value="Loss">❌ Loss</option>
+                        <option value="Missed">⚠️ Missed</option>
+                        <option value="Breakeven">➖ Breakeven</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="session">Session</label>
+                    <select id="session" name="session">
+                        <option value="">Select...</option>
+                        <option value="Asian">Asian (Tokyo)</option>
+                        <option value="Asian/London Overlap">Asian/London Overlap</option>
+                        <option value="London">London</option>
+                        <option value="London/NY Overlap">London/NY Overlap</option>
+                        <option value="New York AM">New York AM</option>
+                        <option value="New York PM">New York PM</option>
+                        <option value="New York Lunch">New York Lunch</option>
+                        <option value="Pre-Market">Pre-Market</option>
+                        <option value="After-Hours">After-Hours</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: SMC / HTF Analysis -->
+        <div class="form-section">
+            <h2 class="form-section-title">🔍 HTF Context (Macro Direction)</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="htf_bias">HTF Bias</label>
+                    <select id="htf_bias" name="htf_bias">
+                        <option value="">Select...</option>
+                        <option value="Bullish">Bullish</option>
+                        <option value="Bearish">Bearish</option>
+                        <option value="Ranging">Ranging / No Clear Bias</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="htf_timeframe">HTF Timeframe</label>
+                    <select id="htf_timeframe" name="htf_timeframe">
+                        <option value="">Select...</option>
+                        <optgroup label="── Macro ──">
+                            <option value="Monthly">Monthly (MN)</option>
+                            <option value="Weekly">Weekly (W)</option>
+                            <option value="Daily">Daily (D)</option>
+                        </optgroup>
+                        <optgroup label="── Intraday HTF ──">
+                            <option value="12H">12 Hour</option>
+                            <option value="8H">8 Hour</option>
+                            <option value="6H">6 Hour</option>
+                            <option value="4H">4 Hour</option>
+                            <option value="2H">2 Hour</option>
+                            <option value="1H">1 Hour</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="htf_structure">HTF Structure</label>
+                    <select id="htf_structure" name="htf_structure">
+                        <option value="">Select...</option>
+                        <optgroup label="── Bullish Structure ──">
+                            <option value="BoS (Higher High)">BoS — Higher High</option>
+                            <option value="BoS (Higher Low)">BoS — Higher Low</option>
+                            <option value="CHoCH (Bullish)">CHoCH — Bullish</option>
+                        </optgroup>
+                        <optgroup label="── Bearish Structure ──">
+                            <option value="BoS (Lower Low)">BoS — Lower Low</option>
+                            <option value="BoS (Lower High)">BoS — Lower High</option>
+                            <option value="CHoCH (Bearish)">CHoCH — Bearish</option>
+                        </optgroup>
+                        <optgroup label="── Other ──">
+                            <option value="Ranging / Consolidation">Ranging / Consolidation</option>
+                            <option value="Accumulation">Accumulation</option>
+                            <option value="Distribution">Distribution</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="poi_type">POI Type</label>
+                    <select id="poi_type" name="poi_type">
+                        <option value="">Select...</option>
+                        <optgroup label="── Zones ──">
+                            <option value="Supply Zone">Supply Zone</option>
+                            <option value="Demand Zone">Demand Zone</option>
+                            <option value="Premium Array">Premium Array</option>
+                            <option value="Discount Array">Discount Array</option>
+                        </optgroup>
+                        <optgroup label="── Order Blocks ──">
+                            <option value="Bullish OB">Bullish Order Block</option>
+                            <option value="Bearish OB">Bearish Order Block</option>
+                            <option value="Breaker Block (Bull)">Breaker Block (Bullish)</option>
+                            <option value="Breaker Block (Bear)">Breaker Block (Bearish)</option>
+                            <option value="Mitigation Block">Mitigation Block</option>
+                            <option value="Rejection Block">Rejection Block</option>
+                            <option value="Propulsion Block">Propulsion Block</option>
+                            <option value="Void Block">Void Block</option>
+                        </optgroup>
+                        <optgroup label="── Imbalances ──">
+                            <option value="FVG (Bullish)">FVG — Bullish</option>
+                            <option value="FVG (Bearish)">FVG — Bearish</option>
+                            <option value="IFVG (Bullish)">Inverse FVG — Bullish</option>
+                            <option value="IFVG (Bearish)">Inverse FVG — Bearish</option>
+                            <option value="Balanced Price Range">Balanced Price Range</option>
+                            <option value="Gap / CE">Gap / CE</option>
+                        </optgroup>
+                        <optgroup label="── Liquidity ──">
+                            <option value="EQH (Equal Highs)">EQH — Equal Highs</option>
+                            <option value="EQL (Equal Lows)">EQL — Equal Lows</option>
+                            <option value="BSL (Buyside Liq.)">BSL — Buyside Liquidity</option>
+                            <option value="SSL (Sellside Liq.)">SSL — Sellside Liquidity</option>
+                            <option value="SIBI">SIBI</option>
+                            <option value="BISI">BISI</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="poi_timeframe">POI Timeframe</label>
+                    <select id="poi_timeframe" name="poi_timeframe">
+                        <option value="">Select...</option>
+                        <optgroup label="── Macro ──">
+                            <option value="Monthly">Monthly (MN)</option>
+                            <option value="Weekly">Weekly (W)</option>
+                            <option value="Daily">Daily (D)</option>
+                        </optgroup>
+                        <optgroup label="── Intraday HTF ──">
+                            <option value="12H">12 Hour</option>
+                            <option value="8H">8 Hour</option>
+                            <option value="6H">6 Hour</option>
+                            <option value="4H">4 Hour</option>
+                            <option value="2H">2 Hour</option>
+                            <option value="1H">1 Hour</option>
+                        </optgroup>
+                        <optgroup label="── Mid ──">
+                            <option value="45M">45 Minute</option>
+                            <option value="30M">30 Minute</option>
+                            <option value="20M">20 Minute</option>
+                            <option value="15M">15 Minute</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: LTF Entry -->
+        <div class="form-section">
+            <h2 class="form-section-title">🎯 LTF Entry Confirmation</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="ltf_timeframe">LTF Timeframe</label>
+                    <select id="ltf_timeframe" name="ltf_timeframe">
+                        <option value="">Select...</option>
+                        <optgroup label="── Mid Timeframes ──">
+                            <option value="45M">45 Minute</option>
+                            <option value="30M">30 Minute</option>
+                            <option value="20M">20 Minute</option>
+                            <option value="15M">15 Minute</option>
+                            <option value="10M">10 Minute</option>
+                        </optgroup>
+                        <optgroup label="── Entry Timeframes ──">
+                            <option value="5M">5 Minute</option>
+                            <option value="3M">3 Minute</option>
+                            <option value="2M">2 Minute</option>
+                            <option value="1M">1 Minute</option>
+                        </optgroup>
+                        <optgroup label="── Scalp / Sub-Minute ──">
+                            <option value="30S">30 Second</option>
+                            <option value="15S">15 Second</option>
+                            <option value="10S">10 Second</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ltf_trigger">LTF Trigger</label>
+                    <select id="ltf_trigger" name="ltf_trigger">
+                        <option value="">Select...</option>
+                        <optgroup label="── CHoCH Based ──">
+                            <option value="CHoCH + OB">CHoCH + Order Block</option>
+                            <option value="CHoCH + FVG">CHoCH + FVG</option>
+                            <option value="CHoCH + Breaker">CHoCH + Breaker Block</option>
+                            <option value="CHoCH + EQL/EQH">CHoCH + EQL/EQH</option>
+                        </optgroup>
+                        <optgroup label="── BoS Based ──">
+                            <option value="BoS + OB">BoS + Order Block</option>
+                            <option value="BoS + FVG">BoS + FVG</option>
+                            <option value="BoS + Mitigation">BoS + Mitigation Block</option>
+                        </optgroup>
+                        <optgroup label="── Direct Entry ──">
+                            <option value="Direct OB tap">Direct OB Tap (no CHoCH)</option>
+                            <option value="Direct FVG tap">Direct FVG Tap</option>
+                            <option value="Direct IFVG tap">Direct IFVG Tap</option>
+                            <option value="Rejection Candle">Rejection Candle / Wick</option>
+                            <option value="Engulfing Candle">Engulfing Candle</option>
+                        </optgroup>
+                        <optgroup label="── Pattern Based ──">
+                            <option value="MSS + OB">MSS + OB</option>
+                            <option value="Displacement + FVG">Displacement + FVG</option>
+                            <option value="Liquidity Grab + Reversal">Liquidity Grab + Reversal</option>
+                            <option value="Double Top/Bottom + CHoCH">Double Top/Bottom + CHoCH</option>
+                        </optgroup>
+                        <optgroup label="── Other ──">
+                            <option value="No confirmation">No Confirmation (early entry)</option>
+                            <option value="Custom">Custom — see notes</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="liquidity_sweep" name="liquidity_sweep">
+                        <label for="liquidity_sweep">Liquidity Sweep Before Entry?</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="liquidity_type">Liquidity Type Swept</label>
+                    <select id="liquidity_type" name="liquidity_type">
+                        <option value="">Select...</option>
+                        <optgroup label="── Highs ──">
+                            <option value="EQH swept">EQH — Equal Highs</option>
+                            <option value="BSL swept">BSL — Buyside Liquidity</option>
+                            <option value="Previous Day High">Previous Day High</option>
+                            <option value="Previous Week High">Previous Week High</option>
+                            <option value="Asian High">Asian Session High</option>
+                            <option value="London High">London Session High</option>
+                            <option value="NY High">NY Session High</option>
+                            <option value="Swing High">Swing High</option>
+                            <option value="Trendline High">Trendline Liquidity (High)</option>
+                        </optgroup>
+                        <optgroup label="── Lows ──">
+                            <option value="EQL swept">EQL — Equal Lows</option>
+                            <option value="SSL swept">SSL — Sellside Liquidity</option>
+                            <option value="Previous Day Low">Previous Day Low</option>
+                            <option value="Previous Week Low">Previous Week Low</option>
+                            <option value="Asian Low">Asian Session Low</option>
+                            <option value="London Low">London Session Low</option>
+                            <option value="NY Low">NY Session Low</option>
+                            <option value="Swing Low">Swing Low</option>
+                            <option value="Trendline Low">Trendline Liquidity (Low)</option>
+                        </optgroup>
+                        <optgroup label="── Other ──">
+                            <option value="Stop Hunt">Stop Hunt</option>
+                            <option value="Inducement">Inducement</option>
+                            <option value="Opening Range">Opening Range</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="refined_entry" name="refined_entry">
+                        <label for="refined_entry">Refined Entry (nested zone)?</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="refined_poi">Refined POI Details</label>
+                    <input type="text" id="refined_poi" name="refined_poi"
+                           placeholder="e.g., 5M OB inside 1H supply">
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Risk Management -->
+        <div class="form-section">
+            <h2 class="form-section-title">💰 Risk Management</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="entry_price">Entry Price</label>
+                    <input type="number" id="entry_price" name="entry_price"
+                           step="any" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="sl_price">Stop Loss</label>
+                    <input type="number" id="sl_price" name="sl_price"
+                           step="any" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="tp1_price">Take Profit 1</label>
+                    <input type="number" id="tp1_price" name="tp1_price"
+                           step="any" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="tp2_price">Take Profit 2</label>
+                    <input type="number" id="tp2_price" name="tp2_price"
+                           step="any" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="risk_reward">Risk : Reward</label>
+                    <input type="number" id="risk_reward" name="risk_reward"
+                           step="0.01" placeholder="e.g., 3.5">
+                </div>
+                <div class="form-group">
+                    <label for="position_size">Position Size (lots/units)</label>
+                    <input type="number" id="position_size" name="position_size"
+                           step="any" placeholder="e.g., 0.1">
+                </div>
+                <div class="form-group">
+                    <label for="pnl">P&L ($)</label>
+                    <input type="number" id="pnl" name="pnl"
+                           step="0.01" placeholder="e.g., 150.00 or -50.00">
+                </div>
+                <div class="form-group">
+                    <label for="pnl_percent">P&L (%)</label>
+                    <input type="number" id="pnl_percent" name="pnl_percent"
+                           step="0.01" placeholder="e.g., 2.5 or -1.0">
+                </div>
+            </div>
+            <div class="rr-calculator">
+                <button type="button" class="btn btn-outline btn-sm"
+                        onclick="calculateRR()">
+                    🧮 Auto-Calculate R:R
+                </button>
+            </div>
+        </div>
+
+        <!-- SECTION: Notes -->
+        <div class="form-section">
+            <h2 class="form-section-title">📝 Trade Notes</h2>
+            <div class="form-group">
+                <label for="pre_trade_notes">Pre-Trade Plan / Reasoning</label>
+                <textarea id="pre_trade_notes" name="pre_trade_notes" rows="4"
+                          placeholder="What was your plan before entering? What confluence did you see?"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="post_trade_notes">Post-Trade Review</label>
+                <textarea id="post_trade_notes" name="post_trade_notes" rows="4"
+                          placeholder="What happened? Did price react as expected?"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="mistakes">Mistakes / What Went Wrong</label>
+                <textarea id="mistakes" name="mistakes" rows="3"
+                          placeholder="Any mistakes? Early entry? Moved SL? Didn't wait for CHoCH?"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="lessons">Lessons Learned</label>
+                <textarea id="lessons" name="lessons" rows="3"
+                          placeholder="Key takeaway. What will you do differently next time?"></textarea>
+            </div>
+
+            <div class="form-grid form-grid-3">
+                <div class="form-group">
+                    <label for="emotion_before">Emotion Before</label>
+                    <select id="emotion_before" name="emotion_before">
+                        <option value="">Select...</option>
+                        <option value="Calm">😌 Calm</option>
+                        <option value="Confident">💪 Confident</option>
+                        <option value="Anxious">😰 Anxious</option>
+                        <option value="FOMO">🏃 FOMO</option>
+                        <option value="Revenge">😤 Revenge</option>
+                        <option value="Uncertain">🤔 Uncertain</option>
+                        <option value="Focused">🎯 Focused</option>
+                        <option value="Bored">😑 Bored</option>
+                        <option value="Excited">🤩 Excited</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="emotion_during">Emotion During</label>
+                    <select id="emotion_during" name="emotion_during">
+                        <option value="">Select...</option>
+                        <option value="Calm">😌 Calm</option>
+                        <option value="Confident">💪 Confident</option>
+                        <option value="Anxious">😰 Anxious</option>
+                        <option value="Fearful">😨 Fearful</option>
+                        <option value="Greedy">🤑 Greedy</option>
+                        <option value="Impatient">⏱️ Impatient</option>
+                        <option value="Focused">🎯 Focused</option>
+                        <option value="Panicking">😱 Panicking</option>
+                        <option value="Disciplined">🧘 Disciplined</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="emotion_after">Emotion After</label>
+                    <select id="emotion_after" name="emotion_after">
+                        <option value="">Select...</option>
+                        <option value="Satisfied">😊 Satisfied</option>
+                        <option value="Frustrated">😤 Frustrated</option>
+                        <option value="Grateful">🙏 Grateful</option>
+                        <option value="Regretful">😞 Regretful</option>
+                        <option value="Neutral">😐 Neutral</option>
+                        <option value="Motivated">🔥 Motivated</option>
+                        <option value="Relieved">😅 Relieved</option>
+                        <option value="Angry">😠 Angry</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: Screenshots -->
+        <div class="form-section">
+            <h2 class="form-section-title">📸 Trade Screenshots</h2>
+            <p class="form-help">
+                Upload in order: HTF Bias → HTF Structure → POI → LTF Entry → Execution → Result
+            </p>
+
+            <div id="screenshotContainer">
+                <div class="screenshot-upload-row" data-index="0">
+                    <div class="form-grid form-grid-4">
+                        <div class="form-group">
+                            <label>Screenshot</label>
+                            <input type="file" name="screenshots"
+                                   accept="image/*" class="file-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Label</label>
+                            <select name="screenshot_labels">
+                                <optgroup label="── Context ──">
+                                    <option value="HTF Bias">HTF Bias / Trend</option>
+                                    <option value="HTF Structure">HTF Structure</option>
+                                    <option value="Weekly Overview">Weekly Overview</option>
+                                    <option value="Daily Overview">Daily Overview</option>
+                                </optgroup>
+                                <optgroup label="── Setup ──">
+                                    <option value="POI Markup">POI Markup</option>
+                                    <option value="Supply Zone">Supply Zone</option>
+                                    <option value="Demand Zone">Demand Zone</option>
+                                    <option value="Order Block">Order Block</option>
+                                    <option value="FVG">FVG / Imbalance</option>
+                                    <option value="Liquidity Sweep">Liquidity Sweep</option>
+                                </optgroup>
+                                <optgroup label="── Entry ──">
+                                    <option value="LTF Entry">LTF CHoCH / Entry Signal</option>
+                                    <option value="LTF OB">LTF Order Block</option>
+                                    <option value="LTF FVG">LTF FVG Entry</option>
+                                    <option value="Trade Execution">Trade Execution</option>
+                                </optgroup>
+                                <optgroup label="── Result ──">
+                                    <option value="TP1 Hit">TP1 Hit</option>
+                                    <option value="TP2 Hit">TP2 Hit</option>
+                                    <option value="SL Hit">SL Hit</option>
+                                    <option value="Result">Final Result</option>
+                                </optgroup>
+                                <optgroup label="── Other ──">
+                                    <option value="Missed Entry">Missed Entry</option>
+                                    <option value="Hindsight">Hindsight Analysis</option>
+                                    <option value="Other">Other</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Timeframe</label>
+                            <select name="screenshot_timeframes">
+                                <option value="">Select...</option>
+                                <optgroup label="── Macro ──">
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Weekly">Weekly</option>
+                                    <option value="Daily">Daily</option>
+                                </optgroup>
+                                <optgroup label="── HTF Intraday ──">
+                                    <option value="12H">12H</option>
+                                    <option value="8H">8H</option>
+                                    <option value="6H">6H</option>
+                                    <option value="4H">4H</option>
+                                    <option value="2H">2H</option>
+                                    <option value="1H">1H</option>
+                                </optgroup>
+                                <optgroup label="── Mid ──">
+                                    <option value="45M">45M</option>
+                                    <option value="30M">30M</option>
+                                    <option value="20M">20M</option>
+                                    <option value="15M">15M</option>
+                                    <option value="10M">10M</option>
+                                </optgroup>
+                                <optgroup label="── Entry ──">
+                                    <option value="5M">5M</option>
+                                    <option value="3M">3M</option>
+                                    <option value="2M">2M</option>
+                                    <option value="1M">1M</option>
+                                </optgroup>
+                                <optgroup label="── Scalp ──">
+                                    <option value="30S">30S</option>
+                                    <option value="15S">15S</option>
+                                    <option value="10S">10S</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" name="screenshot_descriptions"
+                                   placeholder="Brief description...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:1rem; margin-top:0.8rem;">
+                <button type="button" class="btn btn-outline"
+                        onclick="addScreenshotRow()">
+                    + Add Screenshot
+                </button>
+                <button type="button" class="btn btn-outline"
+                        onclick="removeLastRow()">
+                    − Remove Last
+                </button>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">💾 Save Trade</button>
+            <a href="{{ url_for('dashboard') }}"
+               class="btn btn-outline btn-lg">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ── Screenshot rows ──────────────────────────────
+function addScreenshotRow() {
+    const container = document.getElementById('screenshotContainer');
+    const index     = container.children.length;
+    const template  = container.querySelector('.screenshot-upload-row');
+    const row       = template.cloneNode(true);
+
+    row.dataset.index = index;
+    row.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
+    row.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+    row.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+
+    // Add a remove button to cloned rows
+    const removeBtn = document.createElement('button');
+    removeBtn.type        = 'button';
+    removeBtn.className   = 'btn btn-sm btn-danger';
+    removeBtn.textContent = '🗑️ Remove';
+    removeBtn.style.marginTop = '0.5rem';
+    removeBtn.onclick = () => row.remove();
+    row.appendChild(removeBtn);
+
+    container.appendChild(row);
+}
+
+function removeLastRow() {
+    const container = document.getElementById('screenshotContainer');
+    if (container.children.length > 1) {
+        container.removeChild(container.lastElementChild);
+    }
+}
+
+// ── R:R Auto-Calculator ──────────────────────────
+function calculateRR() {
+    const entry  = parseFloat(document.getElementById('entry_price').value);
+    const sl     = parseFloat(document.getElementById('sl_price').value);
+    const tp1    = parseFloat(document.getElementById('tp1_price').value);
+
+    if (!entry || !sl || !tp1) {
+        alert('Fill in Entry Price, Stop Loss, and TP1 to calculate R:R');
+        return;
+    }
+
+    const risk   = Math.abs(entry - sl);
+    const reward = Math.abs(tp1 - entry);
+
+    if (risk === 0) {
+        alert('Risk cannot be zero — check entry and SL values');
+        return;
+    }
+
+    const rr = (reward / risk).toFixed(2);
+    document.getElementById('risk_reward').value = rr;
+
+    // Visual feedback
+    const btn = event.target;
+    const original = btn.textContent;
+    btn.textContent = `✅ R:R = ${rr}`;
+    setTimeout(() => btn.textContent = original, 2000);
+}
+
+// ── Auto-set today's date ────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    const dateInput = document.getElementById('trade_date');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
+
+    // File size validation
+    document.addEventListener('change', function (e) {
+        if (e.target.type === 'file') {
+            const file    = e.target.files[0];
+            const maxSize = 10 * 1024 * 1024; // 10 MB
+            if (file && file.size > maxSize) {
+                alert(`"${file.name}" is too large (max 10 MB). Please compress it first.`);
+                e.target.value = '';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SMC Trading Journal{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1 class="page-title">Trading Dashboard</h1>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.total }}</div>
+            <div class="stat-label">Total Trades</div>
+        </div>
+        <div class="stat-card stat-win">
+            <div class="stat-value">{{ stats.wins }}</div>
+            <div class="stat-label">Wins</div>
+        </div>
+        <div class="stat-card stat-loss">
+            <div class="stat-value">{{ stats.losses }}</div>
+            <div class="stat-label">Losses</div>
+        </div>
+        <div class="stat-card stat-missed">
+            <div class="stat-value">{{ stats.missed }}</div>
+            <div class="stat-label">Missed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.win_rate }}%</div>
+            <div class="stat-label">Win Rate</div>
+        </div>
+        <div class="stat-card {% if stats.total_pnl >= 0 %}stat-win{% else %}stat-loss{% endif %}">
+            <div class="stat-value">${{ stats.total_pnl }}</div>
+            <div class="stat-label">Total P&L</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.avg_rr }}R</div>
+            <div class="stat-label">Avg Win R:R</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.breakeven }}</div>
+            <div class="stat-label">Breakeven</div>
+        </div>
+    </div>
+
+    <!-- Recent Trades -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Recent Trades</h2>
+            <a href="{{ url_for('new_trade') }}" class="btn btn-primary">+ New Trade</a>
+        </div>
+
+        {% if trades %}
+        <div class="trades-table-wrap">
+            <table class="trades-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Pair</th>
+                        <th>Direction</th>
+                        <th>Outcome</th>
+                        <th>R:R</th>
+                        <th>P&L</th>
+                        <th>HTF Setup</th>
+                        <th>PDF</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trade in trades %}
+                    <tr class="trade-row trade-{{ trade.trade_outcome|lower }}">
+                        <td>{{ trade.trade_date }}</td>
+                        <td><strong>{{ trade.pair }}</strong></td>
+                        <td>
+                            <span class="badge badge-{{ 'long' if trade.trade_direction == 'Long' else 'short' }}">
+                                {{ trade.trade_direction }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ trade.trade_outcome|lower }}">
+                                {{ trade.trade_outcome }}
+                            </span>
+                        </td>
+                        <td>{{ trade.risk_reward or '—' }}</td>
+                        <td class="{% if trade.pnl and trade.pnl >= 0 %}text-green{% elif trade.pnl %}text-red{% endif %}">
+                            {{ '$%.2f'|format(trade.pnl) if trade.pnl else '—' }}
+                        </td>
+                        <td class="small-text">
+                            {{ trade.htf_timeframe or '' }} {{ trade.htf_structure or '' }}
+                        </td>
+                        <td>
+                            {% if trade.pdf_path %}
+                                <a href="{{ url_for('download_pdf', trade_id=trade.trade_id) }}" class="btn btn-sm btn-outline" title="Download PDF">📄</a>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('view_trade', trade_id=trade.trade_id) }}" class="btn btn-sm btn-outline">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3>No trades yet</h3>
+            <p>Start journaling your SMC trades to track your progress.</p>
+            <a href="{{ url_for('new_trade') }}" class="btn btn-primary">Log Your First Trade</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

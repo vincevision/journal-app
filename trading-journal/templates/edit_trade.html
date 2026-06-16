@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ trade.pair }} — SMC Trading Journal{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <h1 class="page-title">Edit Trade — {{ trade.pair }} {{ trade.trade_date }}</h1>
+
+    <form method="POST" enctype="multipart/form-data" id="tradeForm">
+        <div class="form-section">
+            <h2 class="form-section-title">📋 Trade Info</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="pair">Pair / Symbol *</label>
+                    <input type="text" id="pair" name="pair" required value="{{ trade.pair }}">
+                </div>
+                <div class="form-group">
+                    <label for="trade_date">Trade Date *</label>
+                    <input type="date" id="trade_date" name="trade_date" required value="{{ trade.trade_date }}">
+                </div>
+                <div class="form-group">
+                    <label for="trade_direction">Direction *</label>
+                    <select id="trade_direction" name="trade_direction" required>
+                        <option value="Long" {% if trade.trade_direction == 'Long' %}selected{% endif %}>Long (Buy)</option>
+                        <option value="Short" {% if trade.trade_direction == 'Short' %}selected{% endif %}>Short (Sell)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="trade_outcome">Outcome *</label>
+                    <select id="trade_outcome" name="trade_outcome" required>
+                        <option value="Win" {% if trade.trade_outcome == 'Win' %}selected{% endif %}>✅ Win</option>
+                        <option value="Loss" {% if trade.trade_outcome == 'Loss' %}selected{% endif %}>❌ Loss</option>
+                        <option value="Missed" {% if trade.trade_outcome == 'Missed' %}selected{% endif %}>⚠️ Missed</option>
+                        <option value="Breakeven" {% if trade.trade_outcome == 'Breakeven' %}selected{% endif %}>➖ Breakeven</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="session">Session</label>
+                    <select id="session" name="session">
+                        <option value="">Select...</option>
+                        <option value="Asian" {% if trade.session == 'Asian' %}selected{% endif %}>Asian</option>
+                        <option value="London" {% if trade.session == 'London' %}selected{% endif %}>London</option>
+                        <option value="New York" {% if trade.session == 'New York' %}selected{% endif %}>New York</option>
+                        <option value="London/NY Overlap" {% if trade.session == 'London/NY Overlap' %}selected{% endif %}>London/NY Overlap</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">🔍 HTF Context</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="htf_bias">HTF Bias</label>
+                    <select id="htf_bias" name="htf_bias">
+                        <option value="">Select...</option>
+                        <option value="Bullish" {% if trade.htf_bias == 'Bullish' %}selected{% endif %}>Bullish</option>
+                        <option value="Bearish" {% if trade.htf_bias == 'Bearish' %}selected{% endif %}>Bearish</option>
+                        <option value="Ranging" {% if trade.htf_bias == 'Ranging' %}selected{% endif %}>Ranging</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="htf_timeframe">HTF Timeframe</label>
+                    <select id="htf_timeframe" name="htf_timeframe">
+                        <option value="">Select...</option>
+                        {% for tf in ['Monthly','Weekly','Daily','4H','1H'] %}
+                        <option value="{{ tf }}" {% if trade.htf_timeframe == tf %}selected{% endif %}>{{ tf }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="htf_structure">HTF Structure</label>
+                    <select id="htf_structure" name="htf_structure">
+                        <option value="">Select...</option>
+                        {% for s in ['BoS (Higher High)','BoS (Lower Low)','CHoCH (Bullish)','CHoCH (Bearish)','Ranging'] %}
+                        <option value="{{ s }}" {% if trade.htf_structure == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="poi_type">POI Type</label>
+                    <select id="poi_type" name="poi_type">
+                        <option value="">Select...</option>
+                        {% for p in ['Supply Zone','Demand Zone','Bullish OB','Bearish OB','FVG (Bullish)','FVG (Bearish)','Breaker Block','Mitigation Block','Rejection Block'] %}
+                        <option value="{{ p }}" {% if trade.poi_type == p %}selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="poi_timeframe">POI Timeframe</label>
+                    <select id="poi_timeframe" name="poi_timeframe">
+                        <option value="">Select...</option>
+                        {% for tf in ['Monthly','Weekly','Daily','4H','1H','15M'] %}
+                        <option value="{{ tf }}" {% if trade.poi_timeframe == tf %}selected{% endif %}>{{ tf }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">🎯 LTF Entry</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="ltf_timeframe">LTF Timeframe</label>
+                    <select id="ltf_timeframe" name="ltf_timeframe">
+                        <option value="">Select...</option>
+                        {% for tf in ['15M','5M','3M','1M'] %}
+                        <option value="{{ tf }}" {% if trade.ltf_timeframe == tf %}selected{% endif %}>{{ tf }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ltf_trigger">LTF Trigger</label>
+                    <select id="ltf_trigger" name="ltf_trigger">
+                        <option value="">Select...</option>
+                        {% for t in ['CHoCH + OB','CHoCH + FVG','BoS + OB','BoS + FVG','Direct OB tap','Direct FVG tap','Breaker + CHoCH','No confirmation'] %}
+                        <option value="{{ t }}" {% if trade.ltf_trigger == t %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="liquidity_sweep" name="liquidity_sweep" {% if trade.liquidity_sweep %}checked{% endif %}>
+                        <label for="liquidity_sweep">Liquidity Sweep?</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="liquidity_type">Liquidity Type</label>
+                    <input type="text" id="liquidity_type" name="liquidity_type" value="{{ trade.liquidity_type or '' }}">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="refined_entry" name="refined_entry" {% if trade.refined_entry %}checked{% endif %}>
+                        <label for="refined_entry">Refined Entry?</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="refined_poi">Refined POI</label>
+                    <input type="text" id="refined_poi" name="refined_poi" value="{{ trade.refined_poi or '' }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">💰 Risk Management</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="entry_price">Entry Price</label>
+                    <input type="number" id="entry_price" name="entry_price" step="any" value="{{ trade.entry_price or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="sl_price">Stop Loss</label>
+                    <input type="number" id="sl_price" name="sl_price" step="any" value="{{ trade.sl_price or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="tp1_price">TP1</label>
+                    <input type="number" id="tp1_price" name="tp1_price" step="any" value="{{ trade.tp1_price or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="tp2_price">TP2</label>
+                    <input type="number" id="tp2_price" name="tp2_price" step="any" value="{{ trade.tp2_price or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="risk_reward">R:R</label>
+                    <input type="number" id="risk_reward" name="risk_reward" step="0.01" value="{{ trade.risk_reward or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="position_size">Position Size</label>
+                    <input type="number" id="position_size" name="position_size" step="any" value="{{ trade.position_size or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="pnl">P&L ($)</label>
+                    <input type="number" id="pnl" name="pnl" step="0.01" value="{{ trade.pnl or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="pnl_percent">P&L (%)</label>
+                    <input type="number" id="pnl_percent" name="pnl_percent" step="0.01" value="{{ trade.pnl_percent or '' }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">📝 Notes</h2>
+            <div class="form-group">
+                <label for="pre_trade_notes">Pre-Trade Plan</label>
+                <textarea id="pre_trade_notes" name="pre_trade_notes" rows="4">{{ trade.pre_trade_notes or '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="post_trade_notes">Post-Trade Review</label>
+                <textarea id="post_trade_notes" name="post_trade_notes" rows="4">{{ trade.post_trade_notes or '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="mistakes">Mistakes</label>
+                <textarea id="mistakes" name="mistakes" rows="3">{{ trade.mistakes or '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="lessons">Lessons</label>
+                <textarea id="lessons" name="lessons" rows="3">{{ trade.lessons or '' }}</textarea>
+            </div>
+            <div class="form-grid form-grid-3">
+                <div class="form-group">
+                    <label for="emotion_before">Emotion Before</label>
+                    <select id="emotion_before" name="emotion_before">
+                        <option value="">Select...</option>
+                        {% for e in ['Calm','Confident','Anxious','FOMO','Revenge','Uncertain','Focused'] %}
+                        <option value="{{ e }}" {% if trade.emotion_before == e %}selected{% endif %}>{{ e }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="emotion_during">Emotion During</label>
+                    <select id="emotion_during" name="emotion_during">
+                        <option value="">Select...</option>
+                        {% for e in ['Calm','Confident','Anxious','Fearful','Greedy','Impatient','Focused'] %}
+                        <option value="{{ e }}" {% if trade.emotion_during == e %}selected{% endif %}>{{ e }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="emotion_after">Emotion After</label>
+                    <select id="emotion_after" name="emotion_after">
+                        <option value="">Select...</option>
+                        {% for e in ['Satisfied','Frustrated','Grateful','Regretful','Neutral','Motivated'] %}
+                        <option value="{{ e }}" {% if trade.emotion_after == e %}selected{% endif %}>{{ e }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Screenshots -->
+        {% if trade.screenshots %}
+        <div class="form-section">
+            <h2 class="form-section-title">📸 Existing Screenshots</h2>
+            <div class="screenshots-grid">
+                {% for shot in trade.screenshots|sort(attribute='sort_order') %}
+                <div class="screenshot-item">
+                    <img src="{{ url_for('static', filename=shot.filepath.replace('static/', '')) }}" alt="{{ shot.label }}" class="screenshot-img">
+                    <p>{{ shot.label }} {% if shot.timeframe %}[{{ shot.timeframe }}]{% endif %}</p>
+                    <form method="POST" action="{{ url_for('delete_screenshot', trade_id=trade.trade_id, screenshot_id=shot.id) }}" style="display:inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this screenshot?')">🗑️ Remove</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Add New Screenshots -->
+        <div class="form-section">
+            <h2 class="form-section-title">📸 Add More Screenshots</h2>
+            <div id="screenshotContainer">
+                <div class="screenshot-upload-row">
+                    <div class="form-grid form-grid-4">
+                        <div class="form-group">
+                            <label>Screenshot</label>
+                            <input type="file" name="screenshots" accept="image/*" class="file-input">
+                        </div>
+                        <div class="form-group">
+                            <label>Label</label>
+                            <select name="screenshot_labels">
+                                <option value="HTF Context">HTF Context</option>
+                                <option value="POI Markup">POI Markup</option>
+                                <option value="LTF Entry">LTF Entry</option>
+                                <option value="Trade Execution">Execution</option>
+                                <option value="Result">Result</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Timeframe</label>
+                            <select name="screenshot_timeframes">
+                                <option value="">—</option>
+                                {% for tf in ['Monthly','Weekly','Daily','4H','1H','15M','5M','1M'] %}
+                                <option value="{{ tf }}">{{ tf }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" name="screenshot_descriptions" placeholder="Brief description...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline" onclick="addScreenshotRow()">+ Add Another</button>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">💾 Update Trade</button>
+            <a href="{{ url_for('view_trade', trade_id=trade.trade_id) }}" class="btn btn-outline btn-lg">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addScreenshotRow() {
+    const container = document.getElementById('screenshotContainer');
+    const row = document.querySelector('.screenshot-upload-row').cloneNode(true);
+    row.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
+    row.querySelectorAll('input[type="text"]').forEach(i => i.value = '');
+    container.appendChild(row);
+}
+</script>
+{% endblock %}

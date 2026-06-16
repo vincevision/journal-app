@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ category }} Trades — SMC Trading Journal{% endblock %}
+
+{% block content %}
+<div class="category-page">
+    <h1 class="page-title">{{ category }} Trades</h1>
+
+    {% if trades %}
+    <div class="trades-table-wrap">
+        <table class="trades-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Pair</th>
+                    <th>Direction</th>
+                    <th>R:R</th>
+                    <th>P&L</th>
+                    <th>Setup</th>
+                    <th>PDF</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trade in trades %}
+                <tr>
+                    <td>{{ trade.trade_date }}</td>
+                    <td><strong>{{ trade.pair }}</strong></td>
+                    <td><span class="badge badge-{{ 'long' if trade.trade_direction == 'Long' else 'short' }}">{{ trade.trade_direction }}</span></td>
+                    <td>{{ trade.risk_reward or '—' }}</td>
+                    <td class="{% if trade.pnl and trade.pnl >= 0 %}text-green{% elif trade.pnl %}text-red{% endif %}">${{ '%.2f'|format(trade.pnl) if trade.pnl else '—' }}</td>
+                    <td class="small-text">{{ trade.htf_timeframe or '' }} {{ trade.htf_structure or '' }}</td>
+                    <td>
+                        {% if trade.pdf_path %}
+                            <a href="{{ url_for('download_pdf', trade_id=trade.trade_id) }}" class="btn btn-sm btn-outline">📄</a>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td><a href="{{ url_for('view_trade', trade_id=trade.trade_id) }}" class="btn btn-sm btn-outline">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No {{ category|lower }} trades yet</h3>
+        <a href="{{ url_for('new_trade') }}" class="btn btn-primary">Log a Trade</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
