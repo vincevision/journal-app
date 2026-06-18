@@ -19,7 +19,7 @@ analysis via Groq, and generate professional PDF reports.
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/yourusername/trading-journal.git
+git clone https://github.com/vincevision/trading-journal.git
 cd trading-journal
 python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
